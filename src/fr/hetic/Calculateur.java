@@ -1,10 +1,9 @@
 package fr.hetic;
-
 import java.io.*;
 
 public class Calculateur {
-
     public static void main(String[] args) {
+
         double num1, num2;
 
         System.out.println("Veuillez saisir le chemin du dossier contenant les fichiers d'opérations:");
@@ -30,22 +29,12 @@ public class Calculateur {
         System.out.println("Entrez le deuxième nombre:");
         num2 = Double.parseDouble(System.console().readLine());
 
-        switch (operator) {
-            case "+":
-                System.out.println("Le résultat est: " + (num1 + num2));
-                writeResult(folder, "addition", num1, operator, num2);
-                break;
-            case "-":
-                System.out.println("Le résultat est: " + (num1 - num2));
-                writeResult(folder, "soustraction", num1, operator, num2);
-                break;
-            case "*":
-                System.out.println("Le résultat est: " + (num1 * num2));
-                writeResult(folder, "multiplication", num1, operator, num2);
-                break;
-            default:
-                System.out.println("Opérateur invalide");
-        }
+        Operation operation = OperationFactory.getOperation(operator);
+        double result = operation.execute(num1, num2);
+
+        writeResult(folder, operation.getClass().getSimpleName(), num1, operator, num2);
+
+        System.out.println("Le résultat est: " + result);
     }
 
     private static void writeResult(File folder, String operation, double num1, String operator, double num2) {
@@ -60,7 +49,6 @@ public class Calculateur {
             FileWriter operationWriter = new FileWriter(operationFile);
             operationWriter.write(String.format("%.2f %s %.2f", num1, operator, num2));
             operationWriter.close();
-
             FileWriter resultWriter = new FileWriter(resultFile);
             double result = 0;
             switch (operator) {
