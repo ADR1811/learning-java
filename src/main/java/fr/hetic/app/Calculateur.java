@@ -41,7 +41,7 @@ public class Calculateur {
         System.out.println("Le résultat est: " + result);
     }
 
-    private static BinaryOperator<Double> getOperation(String operator) {
+    public static BinaryOperator<Double> getOperation(String operator) {
         switch (operator) {
             case "+":
                 return (a, b) -> a + b;
