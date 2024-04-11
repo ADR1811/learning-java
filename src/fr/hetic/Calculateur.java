@@ -1,12 +1,15 @@
 package fr.hetic;
+
 import java.io.*;
+import java.util.Optional;
+import java.util.function.BinaryOperator;
 
 public class Calculateur {
     public static void main(String[] args) {
-
         double num1, num2;
 
         System.out.println("Veuillez saisir le chemin du dossier contenant les fichiers d'opérations:");
+        
         String folderPath = System.console().readLine();
 
         if (folderPath == null || folderPath.isEmpty()) {
@@ -19,52 +22,73 @@ public class Calculateur {
         num1 = Double.parseDouble(System.console().readLine());
 
         String operator = "";
+        BinaryOperator<Double> operation = null;
 
-        while (!operator.equals("+") && !operator.equals("-") && !operator.equals("*")) {
+        while (operation == null) {
             System.out.println("Entrez l'opérateur (+, -, *):");
             operator = System.console().readLine();
             operator = operator.replaceAll("\\s", "");
+
+            operation = getOperation(operator);
         }
 
         System.out.println("Entrez le deuxième nombre:");
         num2 = Double.parseDouble(System.console().readLine());
 
-        Operation operation = OperationFactory.getOperation(operator);
-        double result = operation.execute(num1, num2);
+        double result = operation.apply(num1, num2);
 
-        writeResult(folder, operation.getClass().getSimpleName(), num1, operator, num2);
+        writeResult(folder, operator, num1, num2);
 
         System.out.println("Le résultat est: " + result);
     }
 
-    private static void writeResult(File folder, String operation, double num1, String operator, double num2) {
+    private static BinaryOperator<Double> getOperation(String operator) {
+        switch (operator) {
+            case "+":
+                return (a, b) -> a + b;
+            case "-":
+                return (a, b) -> a - b;
+            case "*":
+                return (a, b) -> a * b;
+            default:
+                System.out.println("Opérateur invalide: " + operator);
+                return null;
+        }
+    }
+
+    private static String getOperatorName(String operator) {
+        switch (operator) {
+            case "+":
+                return "Addtion";
+            case "-":
+                return "Soustraction";
+            case "*":
+                return "Multiplication";
+            default:
+                return "inconnu";
+        }
+    }
+
+    private static void writeResult(File folder, String operator, double num1, double num2) {
         try {
             if (!folder.exists()) {
                 folder.mkdirs();
             }
+    
+            String operatorName = getOperatorName(operator);
 
-            File operationFile = new File(folder, operation + ".op");
-            File resultFile = new File(folder, operation + ".res");
-
+            File operationFile = new File(folder, operatorName + ".op");
+            File resultFile = new File(folder, operatorName + ".res");
+    
             FileWriter operationWriter = new FileWriter(operationFile);
             operationWriter.write(String.format("%.2f %s %.2f", num1, operator, num2));
             operationWriter.close();
+    
             FileWriter resultWriter = new FileWriter(resultFile);
-            double result = 0;
-            switch (operator) {
-                case "+":
-                    result = num1 + num2;
-                    break;
-                case "-":
-                    result = num1 - num2;
-                    break;
-                case "*":
-                    result = num1 * num2;
-                    break;
-            }
+            double result = getOperation(operator).apply(num1, num2);
             resultWriter.write(String.valueOf(result));
             resultWriter.close();
-
+    
             System.out.println("Opération et résultat écrits avec succès.");
         } catch (IOException e) {
             System.out.println("Erreur lors de l'écriture dans les fichiers.");
